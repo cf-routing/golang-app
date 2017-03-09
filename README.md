@@ -7,6 +7,7 @@ Instructions to deploy as this application.
 
 Run the following commands
 
+```
 git clone https://github.com/cf-routing/golang-app.git
 cd doctorroute
 cf api api.domain.com
@@ -16,6 +17,7 @@ cf target -o testorg
 cf create-space testspace
 cf target -o testorg -s testspace
 cf push golang
+```
 
 After staging the app successfully, run the command `cf app golang` to get the URL for the app.
 
