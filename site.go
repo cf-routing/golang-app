@@ -2,24 +2,23 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 )
 
+func HelloServer(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write([]byte("This is an example server.\n"))
+	// fmt.Fprintf(w, "This is an example server.\n")
+	// io.WriteString(w, "This is an example server.\n")
+}
+
 func main() {
-	http.HandleFunc("/", hello)
-	http.HandleFunc("/headers", echo)
-	fmt.Println("listening...")
-	err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	http.HandleFunc("/hello", HelloServer)
+	port := os.Getenv("PORT")
+	err := http.ListenAndServeTLS(fmt.Sprintf(":%s", port), "server.crt", "server.key", nil)
 	if err != nil {
-		panic(err)
+		log.Fatal("ListenAndServe: ", err)
 	}
-}
-
-func hello(res http.ResponseWriter, req *http.Request) {
-	fmt.Fprintln(res, "go, world")
-}
-
-func echo(res http.ResponseWriter, req *http.Request) {
-	fmt.Fprintln(res, fmt.Sprintf("\nRequest Headers: %s \n", req.Header))
 }
