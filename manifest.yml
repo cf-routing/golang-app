@@ -1,0 +1,10 @@
+---
+env:
+  APP_CERT: |
+    -----BEGIN CERTIFICATE-----
+    ... PLACE YOUR CERT HERE...
+    -----END CERTIFICATE-----
+  APP_KEY: |
+    -----BEGIN RSA PRIVATE KEY-----
+    .... PLACE PRIVATE KEY HERE ...
+    -----END RSA PRIVATE KEY-----

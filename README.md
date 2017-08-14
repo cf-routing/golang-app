@@ -5,6 +5,7 @@ Simple app to test headers passed into the application.
 
 Instructions to deploy as this application.
 
+
 Run the following commands
 
 ```
@@ -19,7 +20,11 @@ cf target -o testorg -s testspace
 cf push golang
 ```
 
-After staging the app successfully, run the command `cf app golang` to get the URL for the app.
+## Provide certs for TLS connections
+
+Update `manifest.yml` file with application cert and private key pair variables. These certs should be signed one of the certificates in `router.ca_certs`.
+
+After staging the app successfully, run the command `cf app golang -f manifest.yml` to get the URL for the app.
 
 ```
 curl -vv golang.cfdomain.com
