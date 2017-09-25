@@ -1,0 +1,2 @@
+# !/bin/bash
+bosh2 int manifest.tmpl.yml --vars-store $1 -v system_domain=foo.com > manifest.yml
