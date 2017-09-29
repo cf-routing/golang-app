@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -19,24 +22,41 @@ func HelloServer(w http.ResponseWriter, req *http.Request) {
 func main() {
 	http.HandleFunc("/", HelloServer)
 	port := os.Getenv("PORT")
-	certBits := os.Getenv("APP_CERT")
-	keyBits := os.Getenv("APP_KEY")
+	serverCert := os.Getenv("APP_CERT")
+	serverKey := os.Getenv("APP_KEY")
+	mtlsEnv := os.Getenv("MTLS")
+	caCert := os.Getenv("CA_CERT")
 
-	err := ioutil.WriteFile("server.crt", []byte(certBits), 0400)
+	err := ioutil.WriteFile("server.crt", []byte(serverCert), 0400)
 	if err != nil {
 		log.Fatal("Error while writing cert: ", err)
 	}
-	err = ioutil.WriteFile("server.key", []byte(keyBits), 0400)
+	err = ioutil.WriteFile("server.key", []byte(serverKey), 0400)
 	if err != nil {
 		log.Fatal("Error while writing key ", err)
 	}
 
-	fileBytes, err := ioutil.ReadFile("server.crt")
-	log.Printf("cert contents %s", string(fileBytes))
-	fileBytes, err = ioutil.ReadFile("server.key")
-	log.Printf("key contents %s", string(fileBytes))
+	mtls := mtlsEnv != "false"
+	tlsConfig := &tls.Config{}
+	if mtls {
+		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
+		certPool, err := x509.SystemCertPool()
+		if err != nil {
+			panic(err)
+		}
+		if caCert != "" {
+			if ok := certPool.AppendCertsFromPEM([]byte(caCert)); !ok {
+				panic(errors.New("error adding caCert to cert pool"))
+			}
+			tlsConfig.ClientCAs = certPool
+		}
+	}
 
-	err = http.ListenAndServeTLS(fmt.Sprintf(":%s", port), "server.crt", "server.key", nil)
+	httpServer := &http.Server{
+		Addr:      fmt.Sprintf(":%s", port),
+		TLSConfig: tlsConfig,
+	}
+	err = httpServer.ListenAndServeTLS("server.crt", "server.key")
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

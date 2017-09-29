@@ -1,7 +1,7 @@
 # golang-app
 About
 
-Simple app to test headers passed into the application.
+Simple app to test headers passed into the application and one and two way tls connections.
 
 Instructions to deploy as this application.
 
@@ -20,25 +20,23 @@ cf target -o testorg -s testspace
 cf push golang
 ```
 
-## Provide certs for TLS connections
+## Provide certs for one-way TLS connections
 
-Update `manifest.yml` file with application cert and private key pair variables. These certs should be signed one of the certificates in `router.ca_certs`.
+- Update `deployment-vars.yml` with an `ultimate_ca` comprised of a Certificate Authority and a server cert generated using that CA.
+- In `deployment-vars.yml`, remove the `mtls_ca` field from `deployment-vars.yml`
+- Run `./generate_manifest deployment-vars`
+- Run `cf push potato`
+(If you do not care about the validity of the certificate, you can just run `./generate_manifest potato.yml && cf push potato`)
 
-After staging the app successfully, run the command `cf app golang -f manifest.yml` to get the URL for the app.
+## Provide certs for MTLS connections
 
-```
-curl -vv golang.cfdomain.com
-> Host: golang.cfdomain.com
-> User-Agent: curl/7.50.1
-> Accept: */*
-> X-Forwarded-Host:test
->
-< HTTP/1.1 200 OK
-< Content-Length: 562
-< Content-Type: text/plain; charset=utf-8
-< Date: Thu, 16 Feb 2017 19:01:49 GMT
-< X-Vcap-Request-Id: 5b6fbcef-5a30-4cc6-7045-bb627473f997
-go world!
-```
+- Update `deployment-vars.yml` with an `ultimate_ca` comprised of a Certificate Authority and a server cert generated using that CA.
+- In `deployment-vars.yml`, set `mtls` to true
+- In `deployment-vars.yml`, update `mtls_ca` with a CA cert that has been used to generate the certs for `router.backends.cert_chain` and `router.backends.private_key`.
+- Run `./generate_manifest deployment-vars`
+- Run `cf push potato`
+
+Note that the server certs generated for the backend are generated with the common name `golangSSL`, which the `private_instance_id` of the
+route will need to be set to.
 
 This application exposes endpoint `/headers` and prints all the headers received.
