@@ -1,2 +1,2 @@
 # !/bin/bash
-bosh2 int manifest.tmpl.yml --vars-store $1 > manifest.yml
+bosh2 int manifest.tmpl.yml --vars-store $1 $2 $3 $4 $5 > manifest.yml

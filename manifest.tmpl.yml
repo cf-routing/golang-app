@@ -2,22 +2,8 @@
 env:
   APP_CERT: "((golang_ssl.certificate))"
   APP_KEY: "((golang_ssl.private_key))"
+  TLS_ENABLED: ((tls_enabled))
   MTLS: ((mtls))
   CA_CERT: "((mtls_ca.certificate))"
 
-variables:
-- name: golang_ssl
-  type: certificate
-  options:
-    ca: ultimate_ca
-    common_name: golangSSL
-- name: ultimate_ca
-  type: certificate
-  options:
-    is_ca: true
-    common_name: ultimate_ca
-- name: mtls_ca
-  type: certificate
-  options:
-    is_ca: true
-    common_name: mtls_ca
+variables: []

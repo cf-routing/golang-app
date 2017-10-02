@@ -20,25 +20,30 @@ func HelloServer(w http.ResponseWriter, req *http.Request) {
 // var key = flag.String("key", "", "private key for application")
 
 func main() {
+	var err error
 	http.HandleFunc("/", HelloServer)
 	port := os.Getenv("PORT")
 	serverCert := os.Getenv("APP_CERT")
 	serverKey := os.Getenv("APP_KEY")
+	tlsEnv := os.Getenv("TLS_ENABLED")
 	mtlsEnv := os.Getenv("MTLS")
 	caCert := os.Getenv("CA_CERT")
 
-	err := ioutil.WriteFile("server.crt", []byte(serverCert), 0400)
-	if err != nil {
-		log.Fatal("Error while writing cert: ", err)
-	}
-	err = ioutil.WriteFile("server.key", []byte(serverKey), 0400)
-	if err != nil {
-		log.Fatal("Error while writing key ", err)
+	tlsEnabled := tlsEnv != "false"
+	if tlsEnabled {
+		err = ioutil.WriteFile("server.crt", []byte(serverCert), 0400)
+		if err != nil {
+			log.Fatal("Error while writing cert: ", err)
+		}
+		err = ioutil.WriteFile("server.key", []byte(serverKey), 0400)
+		if err != nil {
+			log.Fatal("Error while writing key ", err)
+		}
 	}
 
 	mtls := mtlsEnv != "false"
 	tlsConfig := &tls.Config{}
-	if mtls {
+	if tlsEnabled && mtls {
 		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
 		certPool, err := x509.SystemCertPool()
 		if err != nil {
@@ -56,7 +61,11 @@ func main() {
 		Addr:      fmt.Sprintf(":%s", port),
 		TLSConfig: tlsConfig,
 	}
-	err = httpServer.ListenAndServeTLS("server.crt", "server.key")
+	if tlsEnabled {
+		err = httpServer.ListenAndServeTLS("server.crt", "server.key")
+	} else {
+		err = httpServer.ListenAndServe()
+	}
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
