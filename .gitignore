@@ -1,2 +1,3 @@
-manifest.yml
-
+server.crt
+server.key
+ca.crt

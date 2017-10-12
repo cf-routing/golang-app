@@ -1,9 +1,0 @@
----
-env:
-  APP_CERT: "((golang_ssl.certificate))"
-  APP_KEY: "((golang_ssl.private_key))"
-  TLS_ENABLED: ((tls_enabled))
-  MTLS: ((mtls))
-  CA_CERT: "((mtls_ca.certificate))"
-
-variables: []
