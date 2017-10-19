@@ -5,6 +5,7 @@ applications:
   disk_quota: 32M
   buildpack: go_buildpack
   env:
+    GOVERSION: go1.9
     GOPACKAGENAME: golang-app
     TLS: false
     MTLS: false
