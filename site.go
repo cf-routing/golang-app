@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -20,24 +19,27 @@ func main() {
 	var err error
 	http.HandleFunc("/", HelloServer)
 	port := os.Getenv("PORT")
-	tlsEnv := os.Getenv("TLS_ENABLED")
+	tlsEnv := os.Getenv("TLS")
 	mtlsEnv := os.Getenv("MTLS")
 
 	tlsEnabled := tlsEnv != "false"
-	mtls := mtlsEnv != "false"
+	mtlsEnabled := mtlsEnv != "false"
+	if !tlsEnabled && mtlsEnabled {
+		log.Fatal("invalid config: mtls requires tls")
+	}
 	tlsConfig := &tls.Config{}
-	if tlsEnabled && mtls {
+	if tlsEnabled && mtlsEnabled {
 		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
 		certPool, err := x509.SystemCertPool()
 		if err != nil {
-			panic(err)
+			log.Fatalf("opening system cert pool: %s", err)
 		}
 		caCert, err := ioutil.ReadFile("ca.crt")
 		if err != nil {
 			log.Fatal("error reading ca cert: ", err)
 		}
 		if ok := certPool.AppendCertsFromPEM([]byte(caCert)); !ok {
-			panic(errors.New("error adding caCert to cert pool"))
+			log.Fatal("error adding caCert to cert pool")
 		}
 		tlsConfig.ClientCAs = certPool
 	}
