@@ -9,4 +9,4 @@ applications:
     GOPACKAGENAME: golang-app
     TLS: false
     MTLS: false
-
+    CIPHER:
