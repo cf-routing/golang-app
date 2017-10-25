@@ -54,8 +54,9 @@ func main() {
 	}
 
 	httpServer := &http.Server{
-		Addr:      fmt.Sprintf(":%s", port),
-		TLSConfig: tlsConfig,
+		Addr:         fmt.Sprintf(":%s", port),
+		TLSConfig:    tlsConfig,
+		TLSNextProto: map[string]func(*http.Server, *tls.Conn, http.Handler){},
 	}
 	if tlsEnabled {
 		err = httpServer.ListenAndServeTLS("server.crt", "server.key")
