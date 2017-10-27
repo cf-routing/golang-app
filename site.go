@@ -14,6 +14,7 @@ import (
 func HelloServer(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte("This is an example server.\n"))
+	w.Write([]byte(fmt.Sprintf("I see you're connecting from %s\n", req.RemoteAddr)))
 }
 
 func main() {
