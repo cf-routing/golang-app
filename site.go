@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -11,10 +12,35 @@ import (
 	"strings"
 )
 
+type AppInfo struct {
+	Name               string   `json:"name"`
+	Routes             []string `json:"uris"`
+	Guid               string   `json:"application_id"`
+	DiegoCellAddress   string
+	ContainerNetworkIP string
+}
+
+func GetAppInfo() (*AppInfo, error) {
+	var appInfo AppInfo
+	err := json.Unmarshal([]byte(os.Getenv("VCAP_APPLICATION")), &appInfo)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse JSON from VCAP_APPLICATION env var: %s", err)
+	}
+	appInfo.DiegoCellAddress = os.Getenv("CF_INSTANCE_ADDR")
+	appInfo.ContainerNetworkIP = os.Getenv("CF_INSTANCE_INTERNAL_IP")
+	return &appInfo, nil
+}
+
 func HelloServer(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte("This is an example server.\n"))
 	w.Write([]byte(fmt.Sprintf("I see you're connecting from %s\n", req.RemoteAddr)))
+	appInfo, err := GetAppInfo()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return
+	}
+	json.NewEncoder(w).Encode(appInfo)
 }
 
 func main() {
