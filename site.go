@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"strings"
 )
@@ -43,9 +44,20 @@ func HelloServer(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(appInfo)
 }
 
+func DumpRequestServer(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	reqBytes, err := httputil.DumpRequest(req, false)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+	}
+
+	w.Write([]byte(fmt.Sprintf("Request Info: %s\n", string(reqBytes))))
+}
+
 func main() {
 	var err error
 	http.HandleFunc("/", HelloServer)
+	http.HandleFunc("/dump", DumpRequestServer)
 	port := os.Getenv("PORT")
 	tlsEnv := os.Getenv("TLS")
 	mtlsEnv := os.Getenv("MTLS")
